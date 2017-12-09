@@ -45,6 +45,18 @@ class Node:
             raise ValueError("Nodes only have 4 words on each, the first 2 are atoms and the second 2 are pointers")
         self.c.set_word(self.my_location,num,new_word)
 
+    def set_previous_node(num):
+        self.set_word(2,num)
+
+    def set_next_node(num):
+        self.set_word(3,num)
+
+    def get_previous_node():
+        return self.get_word(2)
+
+    def get_next_node():
+        return self.get_word(3)
+
     def __del__(self):
         #print "killing "+str(self.my_location)
         try:
@@ -77,7 +89,7 @@ def get_reference_to_node_forwards(first_node,n):
         n-=1
         if node.my_location==-1:
             raise IndexError("Node out of range")
-    return node
+    return copy_node(node)
 
 def get_reference_to_node_backwards(last_node,n):
     node=copy_node(last_node)
@@ -86,7 +98,7 @@ def get_reference_to_node_backwards(last_node,n):
         n-=1
         if node.my_location==-1:
             raise IndexError("Node out of range")
-    return node
+    return copy_node(node)
 
 def remove_nth_node_forwards(first_node, n):
     if n==0:
@@ -108,6 +120,8 @@ def add_nth_node_forwards(first_node, n):
     prev_node=get_reference_to_node_forwards(first_node,n)
     next_node=get_reference_to_node_forwards(first_node,n+1)
     new_node=prev_node.c.allocate()
+    new_node.set_word(0,c.allocs)
+    new_node.set_word(1,c.allocs)
     prev_node.set_word(3,new_node.my_location)
     next_node.set_word(2,new_node.my_location)
 
@@ -115,11 +129,19 @@ def add_nth_node_backwards(last_node, n):
     prev_node=get_reference_to_node_forwards(last_node,n+1)
     next_node=get_reference_to_node_forwards(last_node,n)
     new_node=prev_node.c.allocate()
+    new_node.set_word(0,c.allocs)
+    new_node.set_word(1,c.allocs)
     prev_node.set_word(3,new_node.my_location)
     next_node.set_word(2,new_node.my_location)
 
+def force_garbage_collect(c):
+    for i in range(0,3):
+        spare_node=c.allocate()
+        del spare_node
 
 if __name__ == '__main__':
+    first_node=None
+    last_node=None
     print "\n\n\n"
     heap_size=100
     num_nodes=24
@@ -156,14 +178,44 @@ if __name__ == '__main__':
     #print_linked_list_backwards(copy_node(last_node))
     #print "The memory array: ", c.rba
     print "\nNow let's dereference three nodes from somewhere in the middle", "...\n"
-
+    remove_nth_node_forwards(first_node,3)
+    remove_nth_node_forwards(first_node,5)
+    remove_nth_node_forwards(first_node,9)
     print "\nNow let's add three new nodes", "...\n"
-
+    add_nth_node_forwards(first_node,10)
+    add_nth_node_forwards(first_node,10)
+    add_nth_node_forwards(first_node,10)
     print "\nNow let's make the linked list circular", "...\n"
-
+    first_node.set_word(2,last_node.my_location)
+    last_node.set_word(3,first_node.my_location)
     print "\nNow let's force a garbage collect with these circular references", "...\n"
-
+    force_garbage_collect()
     print "\nNow let's change up the order of some nodes and force a garbage collect", "...\n"
-
+    node_5=get_reference_to_node_forwards(first_node,5)
+    node_9=get_reference_to_node_forwards(first_node,9)
+    Node(node_5.get_previous_node()).set_next_node(node_9.my_location)
+    Node(node_5.get_next_node()).set_previous_node(node_9.my_location)
+    node_9_next=node_9.get_next_node()
+    node_9_prev=node_9.get_previous_node()
+    node_9.set_previous_node(node_5.get_previous_node())
+    node_9.set_next_node(node_5.get_next_node())
+    Node(node_9_prev).set_next_node(node_5.my_location)
+    Node(node_9_next).set_previous_node(node_5.my_location)
+    node_5.set_previous_node(node_9_prev)
+    node_5.set_next_node(node_9_next)
+    del node_5
+    del node_9
+    force_garbage_collect()
     print "\nNow let's change the roots and force a garbage collect", "...\n"
+    new_first_node=c.allocate()
+    new_last_node=c.allocate()
+    new_first_node.set_next_node(first_node.my_location)
+    new_first_node.set_previous_node(new_last_node.my_location)
+    new_last_node.set_previous_node(last_node.my_location)
+    new_last_node.set_next_node(new_first_node.my_location)
+    first_node=copy_node(new_first_node)
+    last_node=copy_node(new_last_node)
+    del new_last_node
+    del new_first_node
+    force_garbage_collect()
     print "\n\n\n"
