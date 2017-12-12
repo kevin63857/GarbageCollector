@@ -1,10 +1,10 @@
 from GC_interface import GarbageCollector
-#This is an abstract class for your garbage collector
 
-#Manager has the following fields...
-# heap_size -> how big is the heap
-# data -> array of ints with size of heap_size
-# active_roots -> array of ints listing the active root pointers
+#This is a much better garbage collector that actually knows how to reuse memory
+#On the down side, this garbage collector kinda requires it's own garbage
+# collector because it uses a couple of python arrays and their append functions
+# so basically malloc.  What would really be great is a garbage collector that
+# could function for any size heap, using only statically allocated memory
 
 #data should be treated in 4 byte chunks
 # data can only have Nodes in it.
@@ -17,8 +17,7 @@ class GC_complex(GarbageCollector):
     def __init__(self):
         self.alloc_count=-1
 
-    # This is the ideal garbade collector.  Every request for memory is fulfilled by just giving memory.
-    # If your peak memory usage exceeds your heap size, you die (not really, you just heap overflow)
+    #Most of this is based off of the count_active_nodes method that I wrote for the Manager
     def allocate(self,data,active_roots):
         self.alloc_count+=1
         active_nodes=[]
