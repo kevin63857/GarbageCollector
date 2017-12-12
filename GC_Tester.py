@@ -2,13 +2,14 @@ from Manager import *
 from GC_Utilities import *
 from ListNode import *
 
-def test(garbage_collector):
+def test(garbage_collector_class,heap_size=100):
     first_node=None
     last_node=None
-    heap_size=200
+    #heap_size=200
     num_nodes=24
     print "\n\n\nInitializing a manager with a heap of size", heap_size, "...\n"
-    c=Manager(heap_size) #give me 100 words in my heap
+    garbage_collector=garbage_collector_class()
+    c=Manager(heap_size,garbage_collector) #give me 100 words in my heap
     print "Creating a doubly linked list with",num_nodes,"nodes in it", "...\n"
     first_node=c.allocate()
     previous_node=copy_node(first_node)
