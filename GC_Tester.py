@@ -47,10 +47,6 @@ def test(garbage_collector_class,heap_size=100):
     add_nth_node_forwards(first_node,10)
 
     print "\nactive_roots: ",c.active_roots
-    print "The linked list, looking forwards:"
-    print_linked_list_forwards(copy_node(first_node))
-    print "\nThe linked list, looking backwards:"
-    print_linked_list_backwards(copy_node(last_node))
 
     add_nth_node_forwards(first_node,10)
     add_nth_node_forwards(first_node,10)
@@ -78,12 +74,14 @@ def test(garbage_collector_class,heap_size=100):
     Node(c,node_9_next).set_previous_node(node_5.my_location)
     node_5.set_previous_node(node_9_prev)
     node_5.set_next_node(node_9_next)
+    remove_nth_node_forwards(first_node,15)#This is just to make room for a new first and last within our 25 node constraint
     del node_5
     del node_9
     force_garbage_collect(c)
     print_memory_status(c)
 
     print "\nNow let's change the roots and force a garbage collect", "...\n"
+    remove_nth_node_forwards(first_node,15)#This is just to make room for a new first and last within our 25 node constraint
     new_first_node=c.allocate()
     new_last_node=c.allocate()
     new_first_node.set_next_node(first_node.my_location)
@@ -94,6 +92,8 @@ def test(garbage_collector_class,heap_size=100):
     last_node=copy_node(new_last_node)
     del new_last_node
     del new_first_node
+    Node(c,last_node.get_previous_node()).set_next_node(last_node.my_location)
+    Node(c,first_node.get_next_node()).set_previous_node(first_node.my_location)
     force_garbage_collect(c)
     print_memory_status(c)
 
